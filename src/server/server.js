@@ -31,11 +31,11 @@ console.log(`Version deployed: ${pkgjson.version}`);
  * Configuration
  */
 let configData;
-const PORTSERVER = 3000;
+const PORTSERVER = 5879;
 const ENV = process.env.NODE_ENV || 'development';
 
 if (ENV === 'development') {
-  configData = JSON.parse(fs.readFileSync('config.json', 'utf8')).dev;
+  configData = {};//JSON.parse(fs.readFileSync('config.json', 'utf8')).dev;
 } else {
   configData = process.env;
 }
@@ -67,11 +67,13 @@ app.use(express.static(`${__dirname}/../../deploy`));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
-app.use(session({
-  secret: configData.EXPRESS_SESSION_SECRET,
-  resave: true,
-  saveUninitialized: true
-}));
+
+// 不检查session
+// app.use(session({
+//   // secret: configData.EXPRESS_SESSION_SECRET,
+//   resave: true,
+//   saveUninitialized: true
+// }));
 
 /**
  * Redux helper functions
@@ -95,12 +97,13 @@ function handleRender(req, res) {
   const html = renderToString(<Root store={store} />);
 
   const initialState = store.getState();
+  console.log(initialState, 'initialState')
 
   // Send the rendered page back to the client
   res.render('index.pug', {
     reactOutput: html,
     initialState: JSON.stringify(initialState),
-    googleAnalyticsId: configData.GOOGLE_ANALYTICS_ID
+    // googleAnalyticsId: configData.GOOGLE_ANALYTICS_ID
   });
 }
 
@@ -139,77 +142,77 @@ function tweetWithMedia(client, request, response, path) {
  */
 app.get('/', handleRender);
 
-app.post('/auth/twitter', (req, res) => {
-  oa.getOAuthRequestToken((error, oauthToken, oauthTokenSecret) => {
-    if (error) {
-      res.status(500).send('auth twitter: error');
-    } else {
-      try {
-        const request = req;
+// app.post('/auth/twitter', (req, res) => {
+//   oa.getOAuthRequestToken((error, oauthToken, oauthTokenSecret) => {
+//     if (error) {
+//       res.status(500).send('auth twitter: error');
+//     } else {
+//       try {
+//         const request = req;
 
-        request.session.oauthRequestToken = oauthToken;
-        request.session.oauthRequestTokenSecret = oauthTokenSecret;
+//         request.session.oauthRequestToken = oauthToken;
+//         request.session.oauthRequestTokenSecret = oauthTokenSecret;
 
-        request.body.drawingData = JSON.parse(request.body.drawingData);
-        request.session.cssData = request.body;
+//         request.body.drawingData = JSON.parse(request.body.drawingData);
+//         request.session.cssData = request.body;
 
-        res.contentType('application/json');
-        const data = JSON.stringify(`https://twitter.com/oauth/authenticate?oauth_token=${oauthToken}`);
-        res.header('Content-Length', data.length);
-        res.end(data);
-      } catch (e) {
-        res.status(500).send('auth twitter: error');
-      }
-    }
-  });
-});
+//         res.contentType('application/json');
+//         const data = JSON.stringify(`https://twitter.com/oauth/authenticate?oauth_token=${oauthToken}`);
+//         res.header('Content-Length', data.length);
+//         res.end(data);
+//       } catch (e) {
+//         res.status(500).send('auth twitter: error');
+//       }
+//     }
+//   });
+// });
 
-app.get('/auth/twitter/callback', (req, res, next) => {
-  if (req.query) {
-    oa.getOAuthAccessToken(
-      req.session.oauthRequestToken,
-      req.session.oauthRequestTokenSecret,
-      req.query.oauth_verifier,
-      (error, oauthAccessToken, oauthAccessTokenSecret) => {
-        if (error) {
-          res.send('auth twitter callback: error');
-        } else {
-          const request = req;
-          const randomName = temp.path();
-          const imgPath = `images${randomName}`;
-          const client = new Twitter({
-            consumer_key: configData.TWITTER_CONSUMER_KEY,
-            consumer_secret: configData.TWITTER_CONSUMER_SECRET,
-            access_token_key: oauthAccessToken,
-            access_token_secret: oauthAccessTokenSecret
-          });
+// app.get('/auth/twitter/callback', (req, res, next) => {
+//   if (req.query) {
+//     oa.getOAuthAccessToken(
+//       req.session.oauthRequestToken,
+//       req.session.oauthRequestTokenSecret,
+//       req.query.oauth_verifier,
+//       (error, oauthAccessToken, oauthAccessTokenSecret) => {
+//         if (error) {
+//           res.send('auth twitter callback: error');
+//         } else {
+//           const request = req;
+//           const randomName = temp.path();
+//           const imgPath = `images${randomName}`;
+//           const client = new Twitter({
+//             consumer_key: configData.TWITTER_CONSUMER_KEY,
+//             consumer_secret: configData.TWITTER_CONSUMER_SECRET,
+//             access_token_key: oauthAccessToken,
+//             access_token_secret: oauthAccessTokenSecret
+//           });
 
-          request.session.oauthAccessToken = oauthAccessToken;
-          request.session.oauthAccessTokenSecret = oauthAccessTokenSecret;
+//           request.session.oauthAccessToken = oauthAccessToken;
+//           request.session.oauthAccessTokenSecret = oauthAccessTokenSecret;
 
-          switch (request.session.cssData.type) {
-            case 'animation':
-              drawGif(request.session.cssData, imgPath, false, (gifPath) => {
-                tweetWithMedia(client, request, res, gifPath);
-              });
-              break;
-            case 'spritesheet':
-              drawSpritesheet(request.session.cssData, imgPath, (spritesheetPath) => {
-                tweetWithMedia(client, request, res, spritesheetPath);
-              });
-              break;
-            default:
-              drawFrame(request.session.cssData, imgPath, (singleFramePath) => {
-                tweetWithMedia(client, request, res, singleFramePath);
-              });
-          }
-        }
-      }
-    );
-  } else {
-    next(new Error('auth twitter callback: error'));
-  }
-});
+//           switch (request.session.cssData.type) {
+//             case 'animation':
+//               drawGif(request.session.cssData, imgPath, false, (gifPath) => {
+//                 tweetWithMedia(client, request, res, gifPath);
+//               });
+//               break;
+//             case 'spritesheet':
+//               drawSpritesheet(request.session.cssData, imgPath, (spritesheetPath) => {
+//                 tweetWithMedia(client, request, res, spritesheetPath);
+//               });
+//               break;
+//             default:
+//               drawFrame(request.session.cssData, imgPath, (singleFramePath) => {
+//                 tweetWithMedia(client, request, res, singleFramePath);
+//               });
+//           }
+//         }
+//       }
+//     );
+//   } else {
+//     next(new Error('auth twitter callback: error'));
+//   }
+// });
 
 app.listen(process.env.PORT || PORTSERVER, () => {
   console.log(

@@ -6,6 +6,8 @@ import * as actionCreators from '../store/actions/actionCreators';
 
 const Dimensions = (props) => {
   const changeDimensions = (gridProperty, behaviour) => {
+    console.log(gridProperty, 'gridProperty')
+    console.log(behaviour, 'behaviour')
     props.actions.changeDimensions(gridProperty, behaviour);
   };
 

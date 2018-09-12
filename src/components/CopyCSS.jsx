@@ -12,6 +12,8 @@ const CopyCSS = (props) => {
       animationCode, duration
     } = props;
 
+    console.log(props)
+
     if (animationCode) {
       const cssAnimationString = exportAnimationData(frames, columns, cellSize, duration);
       return cssAnimationString;

@@ -41,6 +41,7 @@ function changeDimensions(state, gridProperty, behaviour) {
   let newFrames = List();
 
   for (let i = 0; i < framesCount; i++) {
+    console.log(state.get('columns'), 'columns')
     newFrames = newFrames.push(Map({
       grid:
         resizeGrid(

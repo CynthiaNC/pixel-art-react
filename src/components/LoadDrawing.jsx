@@ -81,7 +81,7 @@ export default class LoadDrawing extends React.Component {
               animate: data.animate,
               cellSize: 5, // Unify cellsize for load preview
               columns: data.columns,
-              frames: fromJS(data.frames), // Parse to immutable
+              frames: fromJS(data.frames), // Parse to immutable  数组
               paletteGridData: fromJS(data.paletteGridData),
               rows: data.rows,
               id: data.id

@@ -8,7 +8,8 @@ const PixelCanvas = (props) => {
   const cells = props.activeFrame.get('grid').map((color, i) => ({
     id: i,
     width: 100 / props.columns,
-    color
+    color,
+    disabled: (i % 15) == 3,
   }));
 
   const onCellEvent = id => props.actions.drawCell(id);
