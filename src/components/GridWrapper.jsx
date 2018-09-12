@@ -19,14 +19,22 @@ export default class GridWrapper extends React.Component {
   }
 
   handleMouseUp(id, ev) {
-    ev.preventDefault();
+    if (ev.cancelable) {
+      if (!ev.defaultPrevented) {
+        ev.preventDefault();
+      }
+    }
     this.setState({
       dragging: false
     });
   }
 
   handleMouseDown(id, ev) {
-    ev.preventDefault();
+    if (ev.cancelable) {
+      if (!ev.defaultPrevented) {
+        ev.preventDefault();
+      }
+    }
     if (!this.state.dragging) this.update(id);
     this.setState({
       dragging: true
@@ -34,7 +42,11 @@ export default class GridWrapper extends React.Component {
   }
 
   handleMouseOver(id, ev) {
-    ev.preventDefault();
+    if (ev.cancelable) {
+      if (!ev.defaultPrevented) {
+        ev.preventDefault();
+      }
+    }
     if (this.state.dragging) this.update(id);
   }
 
@@ -48,7 +60,27 @@ export default class GridWrapper extends React.Component {
       when the touch started, not the element under the cursor
       (like the mouse event behaviour)
     */
-    ev.preventDefault();
+
+    if (ev.cancelable) {
+      if (!ev.defaultPrevented) {
+        ev.preventDefault();
+      }
+    }
+
+    // 获取touch移动的时候的触点所设计的元素
+    // 解决在touchmove过程中，能触发各个小元素的状态变更
+    // 使得移动过程中能触发相关其元素进行变色，即使touch的事件并不是由该元素触发的，但还是可以完成其功能
+    // 参考链接 https://gist.github.com/vehpus/6fd5dca2ea8cd0eb0471
+    
+    var boxItem = document.elementFromPoint(ev.targetTouches[0].clientX, ev.targetTouches[0].clientY); 
+    if (boxItem) {
+      let boxItemIdStr = boxItem.dataset.tagid;
+      if (boxItemIdStr) {
+        let boxItemId = boxItemIdStr.replace(/tag/gi, '');
+        boxItemId = boxItemId >> 0;
+        this.update(boxItemId)
+      }
+    }
     if (this.state.dragging) this.update(id);
   }
 
